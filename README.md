@@ -1,6 +1,10 @@
 # UnitCounter
 -----------
 
+## Link to hackster.io project page
+
+https://www.hackster.io/louis-poncet/unitcounter-70e3b1
+
 ## UnitCounter box :
 
 Project made to run on Arduino Micro
