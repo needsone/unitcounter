@@ -1,0 +1,63 @@
+#######################################
+# Syntax Coloring Map For UnitCounterLib
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+RfidManager	KEYWORD1
+CreditManager	KEYWORD1
+RfidErrorCode	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+waitForCard	KEYWORD2
+getCardId	KEYWORD2
+getUid	KEYWORD2
+getUidLength	KEYWORD2
+readBlock	KEYWORD2
+writeBlock	KEYWORD2
+formatCard	KEYWORD2
+setKey	KEYWORD2
+getErrorMessage	KEYWORD2
+getCredit	KEYWORD2
+getCreditMinutes	KEYWORD2
+hasMinimumCredit	KEYWORD2
+addCredit	KEYWORD2
+removeCredit	KEYWORD2
+clearCredit	KEYWORD2
+getName	KEYWORD2
+setName	KEYWORD2
+getLastError	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+BLOCK_CREDIT	LITERAL1
+BLOCK_CLUBNAME	LITERAL1
+BLOCK_USERNAME	LITERAL1
+BLOCK_MASTER_ID	LITERAL1
+BLOCK_SIZE	LITERAL1
+UID_MAX_LENGTH	LITERAL1
+KEY_LENGTH	LITERAL1
+MAX_CREDIT_SECONDS	LITERAL1
+MIN_CREDIT_THRESHOLD	LITERAL1
+SECONDS_PER_MINUTE	LITERAL1
+SPEED_THRESHOLD_LOW	LITERAL1
+SPEED_THRESHOLD_HIGH	LITERAL1
+DEDUCT_RATE_LOW	LITERAL1
+DEDUCT_RATE_HIGH	LITERAL1
+GPS_TIMEOUT_MS	LITERAL1
+GPS_NO_FIX	LITERAL1
+ERR_SUCCESS	LITERAL1
+ERR_READER_PROBLEM	LITERAL1
+ERR_AUTH_FAIL	LITERAL1
+ERR_READ_FAIL	LITERAL1
+ERR_WRITE_FAIL	LITERAL1
+ERR_NO_CARD	LITERAL1
+ERR_INSUFFICIENT_CREDIT	LITERAL1

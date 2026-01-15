@@ -1,56 +1,80 @@
-  /*
-  void fillData(int block, byte blockcontent[] ) {
-    int retWrite = writeBlock(block, blockcontent);
-    lcd.clear();
-    print("Name written ...");
-    return;
-  }
-  */
-  int printName(int block) {
+/**
+ * @file ascii_print.ino
+ * @brief Display functions for OLED output
+ */
+
+// ASCII character range for valid name characters
+#define CHAR_ALPHA_START  0x41  // 'A'
+#define CHAR_ALPHA_END    0x7A  // 'z'
+#define CHAR_SPACE        0x20  // ' '
+
+// ============================================================================
+// Name Display Functions
+// ============================================================================
+
+/**
+ * Print a name field from the card to OLED
+ * @param block Block number to read (BLOCK_NAME or BLOCK_CLUB)
+ * @return 1 on success, 0 on error
+ */
+int printName(int block) {
     unsigned int retRead = read_block(block, keya, readbackblock, 0);
 
-    //lcd.clearLcd();
-    int i = 0;
-    while ( (readbackblock[i] >= 0x41 &&  readbackblock[i] <= 0x7A) || readbackblock[i] == 32) {
-      lcd.sendData((char)readbackblock[i]);
-      i++;
+    if (retRead == 3 || retRead == 4) {
+        print("No card");
+        return 0;
     }
-    return (1);
-  }
 
-  void PrintByteLcd(byte *buffer, byte bufferSize) {
+    // Print valid ASCII characters only
+    for (int i = 0; i < 16; i++) {
+        uint8_t c = readbackblock[i];
+        if ((c >= CHAR_ALPHA_START && c <= CHAR_ALPHA_END) || c == CHAR_SPACE) {
+            lcd.sendData(c);
+        } else {
+            break;
+        }
+    }
+
+    return 1;
+}
+
+/**
+ * Print byte array to OLED (debug utility)
+ * @param buffer Byte buffer to print
+ * @param bufferSize Size of buffer
+ */
+void PrintByteLcd(byte* buffer, byte bufferSize) {
     for (byte i = 0; i < bufferSize; i++) {
-      lcd.sendData(buffer[i]);
+        lcd.sendData(buffer[i]);
     }
-  }
-  /*
-  int getName(int blockNumber) {
-    // Username  = 6;
-    // Clubname  = 4;
-   return (read_block(blockNumber, keya, readbackblock, 0));
-  }
-  */
+}
 
-  void printCredit(float freqOn,float accel) {
-    int i = 0;
+// ============================================================================
+// Credit Display Functions
+// ============================================================================
 
-    unsigned int minutes = HowManyUnit() / 60;
-    lcd.cursPos(0, 3);
+/**
+ * Display credit information on OLED
+ * @param speed Current speed in km/h
+ * @param accel Current acceleration magnitude
+ */
+void printCredit(float speed, float accel) {
+    unsigned int minutes = HowManyUnit() / SECONDS_PER_MIN;
+
+    lcd.clearLcd();
+
+    // Line 0: Credit in minutes and speed
+    lcd.cursPos(0, 0);
+    print("Cr:");
     print(minutes);
-    print("       ");
-  //  print("mn: ");
-  /*  print(" s:");
-   print(HowManyUnit());*/
+    print("m");
 
-    //while (i < 16 && readbackblock[i] != 0 && (  (readbackblock[i] >= 0x41 &&  readbackblock[i] <= 0x7A) || readbackblock[i] == 0x20)) {
-    //  print(char(readbackblock[i]));
-    //  i++;
-    //}
+    if (speed >= 0) {
+        print(" S:");
+        print((unsigned int)speed);
+    }
 
-  /*
-    print("Sp:");
-    print(freqOn);
-    print(" Acc:");
-    print(accel); */
-
-  }
+    // Line 1: Customer name
+    lcd.cursPos(0, 1);
+    printName(BLOCK_NAME);
+}

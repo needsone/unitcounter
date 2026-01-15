@@ -1,107 +1,102 @@
-
-void formatRfid() {
-  byte blockcontent[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  int retWrite = write_block(8, keya, blockcontent, 0);
-  retWrite = write_block(4, keya, blockcontent, 0);
-  retWrite = write_block(2, keya, blockcontent, 0);
-  lcd.clearLcd();
-  print("Format done ...");
-  return;
-}
-
-/*
- *  uint8_t mifareclassic_AuthenticateBlock (uint8_t * uid, uint8_t uidLen,
- *                                           uint32_t blockNumber, uint8_t keyNumber,
- *                                           uint8_t * keyData);
- * uint8_t mifareclassic_ReadDataBlock (uint8_t blockNumber, uint8_t * data);
- * uint8_t mifareclassic_WriteDataBlock (uint8_t blockNumber, uint8_t * data);
+/**
+ * @file rfid_functions.ino
+ * @brief RFID block read/write operations for Mifare Classic cards
  */
-/*
-int readBlock(int blockNumber, byte arrayAddress[]) {
-  uint8_t success = nfc.mifareclassic_AuthenticateBlock(uid, uidLength, blockNumber, 0, keya);
 
-  if (!success) {
-    lcd.clearLcd();
-    print("Auth problem");
-    delay(2000);
-    return (3);
-  } else {
-    success = nfc.mifareclassic_ReadDataBlock(blockNumber, arrayAddress);
-    return (1);
-  }
-}
+// ============================================================================
+// Error Handling
+// ============================================================================
 
-int writeBlock(int blockNumber, byte arrayAddress[]) {
-  uint8_t success = nfc.mifareclassic_AuthenticateBlock(uid, uidLength, blockNumber, 0, keya);
-
-  if (!success) {
-    lcd.clearLcd();
-    print("Auth problem");
-    delay(2000);
-    return (3);
-  } else {
-    success = nfc.mifareclassic_WriteDataBlock(blockNumber, arrayAddress);
-    return (1);
-  }
-}
-*/
-
+/**
+ * Display error message on OLED based on error code
+ * @param code Error code (2=reader, 3=auth, 4=read, 5=write)
+ */
 void read_write_error_msg(uint8_t code) {
-
-  lcd.clearLcd();
-  if (code == 2 ) {
-    print("Reader Problem");
-  } else if (code == 3) {
-    print("Auth Fail   ");
-  } else if (code == 4) {
-    print("Read fail   ");
-  } else if (code == 5) {
-    print("Write fail   ");
-  }
+    lcd.clearLcd();
+    switch (code) {
+        case 2:
+            print("Reader Problem");
+            break;
+        case 3:
+            print("Auth Fail");
+            break;
+        case 4:
+            print("Read Fail");
+            break;
+        case 5:
+            print("Write Fail");
+            break;
+    }
 }
 
+// ============================================================================
+// Block Read/Write Operations
+// ============================================================================
+
+/**
+ * Read a block from the RFID card
+ * @param block Block number to read
+ * @param key Authentication key (6 bytes)
+ * @param data Buffer for read data (16 bytes)
+ * @param a_or_b Key type: 0=Key A, 1=Key B
+ * @return 1=success, 3=auth fail, 4=read fail
+ */
 uint8_t read_block(int block, uint8_t key[6], byte data[], boolean a_or_b) {
-  //  uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
-  //  uint8_t uidLength;                        // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
-  // 4 = read fail
-  // 2 = read passive fail
-  // 3 = auth fail
-  // 1 = success
-  // uint8_t success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength);
+    uint8_t success = nfc.mifareclassic_AuthenticateBlock(uid, uidLength, block, a_or_b, key);
 
-    uint8_t  success = nfc.mifareclassic_AuthenticateBlock(uid, uidLength, block, a_or_b, key);
+    if (!success) {
+        read_write_error_msg(3);
+        return 3;
+    }
 
-    if (success) {
-      success = nfc.mifareclassic_ReadDataBlock(block, data);
-      } else {
-    read_write_error_msg(3);
-    return (3);
-  }
-  if (success) {
-    return (1);
-  } else {
-    read_write_error_msg(4);
-    return (4);
-  }
+    success = nfc.mifareclassic_ReadDataBlock(block, data);
+    if (!success) {
+        read_write_error_msg(4);
+        return 4;
+    }
+
+    return 1;
 }
 
+/**
+ * Write data to a block on the RFID card
+ * @param block Block number to write
+ * @param key Authentication key (6 bytes)
+ * @param data Data to write (16 bytes)
+ * @param a_or_b Key type: 0=Key A, 1=Key B
+ * @return 1=success, 3=auth fail, 5=write fail
+ */
 uint8_t write_block(int block, uint8_t key[6], byte data[], boolean a_or_b) {
-  // uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };  // Buffer to store the returned UID
-  // uint8_t uidLength;                        // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
-  // write Fail
-  // uint8_t success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength);
+    uint8_t success = nfc.mifareclassic_AuthenticateBlock(uid, uidLength, block, a_or_b, key);
 
-  uint8_t  success = nfc.mifareclassic_AuthenticateBlock(uid, uidLength, block, a_or_b, key);
-  if (success) {
+    if (!success) {
+        read_write_error_msg(3);
+        return 3;
+    }
+
     success = nfc.mifareclassic_WriteDataBlock(block, data);
-  } else {
-    read_write_error_msg(3);
-    return (3);
-  }
-  if (success) {
-    return (1);
-  } else {
-    read_write_error_msg(5);
-    return (5);
-  }
+    if (!success) {
+        read_write_error_msg(5);
+        return 5;
+    }
+
+    return 1;
+}
+
+// ============================================================================
+// Card Formatting
+// ============================================================================
+
+/**
+ * Format the RFID card by clearing data blocks
+ */
+void formatRfid() {
+    byte emptyBlock[16] = {0};
+
+    write_block(BLOCK_MASTER, keya, emptyBlock, 0);
+    write_block(BLOCK_NAME, keya, emptyBlock, 0);
+    write_block(BLOCK_CREDIT, keya, emptyBlock, 0);
+
+    lcd.clearLcd();
+    print("Format done!");
 }
